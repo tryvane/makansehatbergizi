@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Makan Sehat Bergizi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tone.js untuk Efek Suara -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandGreen: '#4ADE80',
+                        brandDarkGreen: '#16A34A',
+                        brandOrange: '#FB923C',
+                        brandYellow: '#FACC15',
+                        brandBlue: '#38BDF8',
+                        brandRed: '#F87171'
+                    },
+                    fontFamily: {
+                        display: ['Fredoka', 'sans-serif'],
+                        body: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .font-display {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        /* Glassmorphism custom design */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        /* Animasi Kustom */
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(-5%); }
+            50% { transform: translateY(5%); }
+        }
+
+        .animate-bounce-slow {
+            animation: bounce-slow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-light {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.03); }
+        }
+
+        .animate-pulse-light {
+            animation: pulse-light 2s infinite ease-in-out;
+        }
+
+        /* Float toast notification */
+        .toast-enter {
+            animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.8); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Canvas Style */
+        #gameCanvas {
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 75%, #90EE90 75%, #7CCD7C 100%);
+            border-radius: 1.5rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Navbar Navigation -->
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-green-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('game')">
+                <div class="bg-emerald-500 text-white p-2.5 rounded-2xl shadow-md transform hover:rotate-6 transition">
+                    <i class="fa-solid font-bold fa-apple-whole text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-xl md:text-2xl text-emerald-600 leading-tight">NutriCatch</h1>
+                    <p class="text-xs text-slate-500 font-medium">Petualangan Gizi Seimbang</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex space-x-1 sm:space-x-2 bg-emerald-50 p-1.5 rounded-2xl border border-emerald-100">
+                <button id="nav-game" onclick="switchTab('game')" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-emerald-500 text-white shadow-sm">
+                    <i class="fa-solid fa-gamepad mr-1.5"></i>Main
+                </button>
+                <button id="nav-piring" onclick="switchTab('piring')" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-100/50">
+                    <i class="fa-solid fa-utensils mr-1.5"></i>Isi Piringku
+                </button>
+                <button id="nav-edukasi" onclick="switchTab('edukasi')" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-100/50">
+                    <i class="fa-solid fa-book-open-reader mr-1.5"></i>Edukasi
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- ================= SECTION GAME ================= -->
+        <section id="section-game" class="block space-y-4">
+            
+            <!-- Dashboard Info Game -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <!-- Score -->
+                <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center space-x-3 border-l-4 border-l-emerald-500">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Skor</p>
+                        <p id="scoreDisplay" class="font-display text-xl md:text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+
+                <!-- High Score -->
+                <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center space-x-3 border-l-4 border-l-amber-500">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Tertinggi</p>
+                        <p id="highScoreDisplay" class="font-display text-xl md:text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+
+                <!-- HP / Lives -->
+                <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center space-x-3 border-l-4 border-l-rose-500">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Kesehatan</p>
+                        <div id="livesDisplay" class="flex space-x-1 text-rose-500 text-lg md:text-xl">
+                            <i class="fa-solid fa-heart"></i>
+                            <i class="fa-solid fa-heart"></i>
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio Toggle & Controls -->
+                <div class="glass-card p-3 md:p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Suara</p>
+                        <button id="soundBtn" onclick="toggleSound()" class="text-xs font-semibold px-2.5 py-1 mt-1 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition">
+                            <i class="fa-solid fa-volume-high mr-1"></i>ON
+                        </button>
+                    </div>
+                    <button id="pauseBtn" onclick="togglePause()" disabled class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 font-bold hover:bg-indigo-200 transition flex items-center justify-center disabled:opacity-50">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Canvas Container -->
+            <div class="relative w-full max-w-4xl mx-auto overflow-hidden rounded-3xl border-4 border-white shadow-xl">
+                <!-- Toast Notification Floating -->
+                <div id="gameToast" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2.5 rounded-2xl shadow-lg glass-card font-semibold text-xs md:text-sm text-center max-w-[90%] transition-all">
+                    <!-- Dynamic Content From JS -->
+                </div>
+
+                <!-- Canvas Area -->
+                <canvas id="gameCanvas" class="w-full h-[380px] sm:h-[420px] md:h-[480px] block"></canvas>
+
+                <!-- Start / Game Over Overlay -->
+                <div id="gameOverlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-30 transition-all">
+                    <div id="overlayContent" class="glass-card p-6 md:p-8 rounded-3xl max-w-md w-full shadow-2xl animate-bounce-slow">
+                        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
+                            <i class="fa-solid fa-bowl-food"></i>
+                        </div>
+                        <h2 id="overlayTitle" class="font-display text-2xl md:text-3xl font-bold text-slate-800 mb-2">Siap Bermain?</h2>
+                        <p id="overlayDesc" class="text-xs md:text-sm text-slate-600 mb-6 leading-relaxed">
+                            Tangkap makanan sehat (buah, sayur, ikan) untuk tambah skor dan gizi! Hindari makanan tinggi gula, garam, dan lemak jenuh!
+                        </p>
+                        <button id="startBtn" onclick="startGame()" class="w-full py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-display font-bold text-lg rounded-2xl shadow-lg shadow-emerald-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition">
+                            <i class="fa-solid fa-play mr-2"></i>Mulai Permainan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile & Touch Controls Bar -->
+            <div class="glass-card p-4 rounded-2xl max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <span class="bg-slate-200 px-2 py-1 rounded font-mono font-bold text-slate-700">←</span>
+                    <span class="bg-slate-200 px-2 py-1 rounded font-mono font-bold text-slate-700">→</span>
+                    <span>Gunakan Keyboard atau tombol di bawah untuk menggeser piring:</span>
+                </div>
+                <!-- On-Screen Touch Controls -->
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button id="btnLeft" class="flex-1 sm:flex-none px-6 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-sm text-slate-700 hover:bg-slate-50 active:bg-slate-200 font-bold text-xl active:scale-95 transition">
+                        <i class="fa-solid fa-arrow-left"></i> Kiri
+                    </button>
+                    <button id="btnRight" class="flex-1 sm:flex-none px-6 py-3 bg-white border-2 border-slate-200 rounded-2xl shadow-sm text-slate-700 hover:bg-slate-50 active:bg-slate-200 font-bold text-xl active:scale-95 transition">
+                        Kanan <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= SECTION ISI PIRINGKU ================= -->
+        <section id="section-piring" class="hidden space-y-6">
+            <div class="glass-card p-6 md:p-8 rounded-3xl max-w-4xl mx-auto border-t-4 border-t-emerald-500">
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full uppercase tracking-wider">Panduan Gizi Seimbang</span>
+                    <h2 class="font-display text-2xl md:text-3xl font-bold text-slate-800 mt-2">Modul Interactive "Isi Piringku"</h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Kementerian Kesehatan RI merekomendasikan porsi makan seimbang setiap kali makan utama. Klik bagian piring di bawah untuk mempelajari fungsinya!
+                    </p>
+                </div>
+
+                <!-- Interactive Plate Container -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Plate Graphic -->
+                    <div class="lg:col-span-6 flex justify-center">
+                        <div class="relative w-72 h-72 sm:w-80 sm:h-80 rounded-full border-8 border-slate-200 bg-white shadow-2xl p-3 flex flex-wrap overflow-hidden transform hover:rotate-1 transition-all duration-300">
+                            <!-- Karbohidrat (2/6 = 33%) -->
+                            <div onclick="selectPlateSection('karbo')" class="w-1/2 h-1/2 bg-amber-100 hover:bg-amber-200 border-r-2 border-b-2 border-white rounded-tl-full p-4 cursor-pointer flex flex-col items-center justify-center transition group">
+                                <span class="text-3xl group-hover:scale-125 transition">🍚</span>
+                                <span class="font-display font-bold text-xs text-amber-800 mt-1">Makanan Pokok</span>
+                                <span class="text-[10px] text-amber-600 font-semibold">(2/6 porsi)</span>
+                            </div>
+                            
+                            <!-- Sayuran (2/6 = 33%) -->
+                            <div onclick="selectPlateSection('sayur')" class="w-1/2 h-1/2 bg-emerald-100 hover:bg-emerald-200 border-b-2 border-white rounded-tr-full p-4 cursor-pointer flex flex-col items-center justify-center transition group">
+                                <span class="text-3xl group-hover:scale-125 transition">🥦</span>
+                                <span class="font-display font-bold text-xs text-emerald-800 mt-1">Sayur-Mayur</span>
+                                <span class="text-[10px] text-emerald-600 font-semibold">(2/6 porsi)</span>
+                            </div>
+
+                            <!-- Lauk Pauk (1/6 = 17%) -->
+                            <div onclick="selectPlateSection('lauk')" class="w-1/2 h-1/2 bg-rose-100 hover:bg-rose-200 border-r-2 border-white rounded-bl-full p-4 cursor-pointer flex flex-col items-center justify-center transition group">
+                                <span class="text-3xl group-hover:scale-125 transition">🍗</span>
+                                <span class="font-display font-bold text-xs text-rose-800 mt-1">Lauk Pauk</span>
+                                <span class="text-[10px] text-rose-600 font-semibold">(1/6 porsi)</span>
+                            </div>
+
+                            <!-- Buah-Buahan (1/6 = 17%) -->
+                            <div onclick="selectPlateSection('buah')" class="w-1/2 h-1/2 bg-orange-100 hover:bg-orange-200 rounded-br-full p-4 cursor-pointer flex flex-col items-center justify-center transition group">
+                                <span class="text-3xl group-hover:scale-125 transition">🍎</span>
+                                <span class="font-display font-bold text-xs text-orange-800 mt-1">Buah-Buahan</span>
+                                <span class="text-[10px] text-orange-600 font-semibold">(1/6 porsi)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Information Panel -->
+                    <div class="lg:col-span-6 bg-slate-50/80 p-6 rounded-2xl border border-slate-200 min-h-[280px] flex flex-col justify-between">
+                        <div id="plateInfoContent">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <span id="plateInfoIcon" class="text-3xl">💡</span>
+                                <div>
+                                    <h3 id="plateInfoTitle" class="font-display font-bold text-xl text-slate-800">Klik bagian piring</h3>
+                                    <p id="plateInfoSubtitle" class="text-xs text-slate-500 font-semibold">Pilih kategori nutrisi di sebelah kiri</p>
+                                </div>
+                            </div>
+                            <p id="plateInfoDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                                "Isi Piringku" membagi piring makan menjadi 2 separuh utama: 50% untuk karbohidrat dan lauk pauk, serta 50% sisanya untuk sayuran dan buah-buahan.
+                            </p>
+                            <div id="plateInfoList" class="space-y-1.5 text-xs text-slate-700">
+                                <!-- Dynamic List -->
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+                            <span><i class="fa-solid fa-glass-water text-blue-500 mr-1"></i> Jangan lupa minum air putih 8 gelas/hari!</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION EDUKASI & ENSIKLOPEDIA ================= -->
+        <section id="section-edukasi" class="hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto">
+                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full uppercase tracking-wider">Ensiklopedia Mini</span>
+                <h2 class="font-display text-2xl md:text-3xl font-bold text-slate-800 mt-2">Kamus Nutrisi & Tips Sehat</h2>
+                <p class="text-slate-600 text-sm mt-1">Pelajari mana makanan yang mendukung tumbuh kembangmu dan mana yang harus dibatasi.</p>
+            </div>
+
+            <!-- Tab Switcher Healthy vs Unhealthy -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                
+                <!-- Healthy Foods Card List -->
+                <div class="glass-card p-6 rounded-3xl border-t-4 border-t-emerald-500 space-y-4">
+                    <div class="flex items-center space-x-3 text-emerald-600">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center font-bold text-xl">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-slate-800">Makanan Super (Pahlawan Gizi)</h3>
+                    </div>
+                    <div id="healthyList" class="space-y-3">
+                        <!-- Populated by Javascript -->
+                    </div>
+                </div>
+
+                <!-- Unhealthy Foods Card List -->
+                <div class="glass-card p-6 rounded-3xl border-t-4 border-t-rose-500 space-y-4">
+                    <div class="flex items-center space-x-3 text-rose-600">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center font-bold text-xl">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-slate-800">Batasi Konsumsi (Junk Food)</h3>
+                    </div>
+                    <div id="unhealthyList" class="space-y-3">
+                        <!-- Populated by Javascript -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tips Tambahan G4G1L5 -->
+            <div class="glass-card p-6 rounded-3xl max-w-5xl mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl text-indigo-500">🧠</div>
+                    <div>
+                        <h4 class="font-display font-bold text-lg text-slate-800">Aturan G4-G1-L5 Kementerian Kesehatan</h4>
+                        <p class="text-xs md:text-sm text-slate-600">Batasi konsumsi harian: Maksimal **Gula 4 sendok makan**, **Garam 1 sendok teh**, dan **Lemak 5 sendok makan** (minyak).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full bg-white/80 border-t border-slate-200 py-4 mt-8">
+        <div class="max-w-6xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
+            Petualangan Makan Sehat Bergizi &copy; 2026. Edukasi Nutrisi & Hidup Sehat Anak Bangsa.
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* ================= GAME DATA & STATE ================= */
+        const FOOD_ITEMS = [
+            // Healthy Foods
+            { id: 'apple', name: 'Apel', type: 'healthy', emoji: '🍎', score: 10, info: 'Kaya serat & Vitamin C untuk kekebalan tubuh!' },
+            { id: 'banana', name: 'Pisang', type: 'healthy', emoji: '🍌', score: 10, info: 'Sumber Kalium untuk energi & otot kuat!' },
+            { id: 'carrot', name: 'Wortel', type: 'healthy', emoji: '🥕', score: 10, info: 'Tinggi Vitamin A untuk kesehatan mata!' },
+            { id: 'broccoli', name: 'Brokoli', type: 'healthy', emoji: '🥦', score: 15, info: 'Superfood kaya zat besi dan antioksidan!' },
+            { id: 'fish', name: 'Ikan', type: 'healthy', emoji: '🐟', score: 15, info: 'Protein & Omega-3 untuk kecerdasan otak!' },
+            { id: 'milk', name: 'Susu Segar', type: 'healthy', emoji: '🥛', score: 10, info: 'Kaya Kalsium untuk tulang & gigi kuat!' },
+            { id: 'egg', name: 'Telur', type: 'healthy', emoji: '🥚', score: 10, info: 'Protein berkualitas tinggi untuk pertumbuhan!' },
+            
+            // Unhealthy Foods
+            { id: 'burger', name: 'Burger', type: 'unhealthy', emoji: '🍔', score: -10, info: 'Tinggi lemak jenuh & kalori kosong!' },
+            { id: 'soda', name: 'Minuman Bersoda', type: 'unhealthy', emoji: '🥤', score: -10, info: 'Gula berlebihan memicu obesitas & diabetes!' },
+            { id: 'donut', name: 'Donat Manis', type: 'unhealthy', emoji: '🍩', score: -10, info: 'Kaya gula halus dan bisa merusak gigi!' },
+            { id: 'fries', name: 'Kentang Goreng', type: 'unhealthy', emoji: '🍟', score: -10, info: 'Tinggi garam/natrium, buruk untuk tekanan darah!' },
+            { id: 'candy', name: 'Permen', type: 'unhealthy', emoji: '🍬', score: -5, info: 'Tanpa gizi & memicu gigi berlubang!' }
+        ];
+
+        // Educational Database for Plate
+        const PLATE_DATA = {
+            karbo: {
+                title: "Makanan Pokok (Karbohidrat)",
+                subtitle: "Porsi: ~1/3 piring (2/6)",
+                icon: "🍚",
+                desc: "Sumber energi utama tubuh untuk beraktivitas, belajar, dan bermain sehari-hari.",
+                list: [
+                    "• Nasi Putih / Nasi Merah",
+                    "• Jagung, Singkong, Ubi Jalar",
+                    "• Kentang, Roti Gandum, Oatmeal"
+                ]
+            },
+            sayur: {
+                title: "Sayur-Mayur",
+                subtitle: "Porsi: ~1/3 piring (2/6)",
+                icon: "🥦",
+                desc: "Sumber serat, vitamin, dan mineral untuk menjaga pencernaan dan mencegah penyakit.",
+                list: [
+                    "• Bayam, Kangkung, Sawi",
+                    "• Wortel, Brokoli, Buncis",
+                    "• Tomat, Terong, Labu Siem"
+                ]
+            },
+            lauk: {
+                title: "Lauk Pauk (Protein)",
+                subtitle: "Porsi: ~1/6 piring (1/6)",
+                icon: "🍗",
+                desc: "Pembangun sel tubuh, memperbaiki jaringan rusak, dan mendukung pertumbuhan tinggi badan.",
+                list: [
+                    "• Protein Hewani: Ikan, Ayam, Daging, Telur",
+                    "• Protein Nabati: Tahu, Tempe, Kacang-kacangan"
+                ]
+            },
+            buah: {
+                title: "Buah-Buahan",
+                subtitle: "Porsi: ~1/6 piring (1/6)",
+                icon: "🍎",
+                desc: "Kaya antioksidan, air, dan vitamin alami untuk menjaga imunitas tubuh tetap bugar.",
+                list: [
+                    "• Apel, Jeruk, Pisang, Pepaya",
+                    "• Semangka, Melon, Mangga, Beri"
+                ]
+            }
+        };
+
+        /* Game Variables */
+        let canvas, ctx;
+        let gameRunning = false;
+        let isPaused = false;
+        let score = 0;
+        let highScore = localStorage.getItem('nutri_highscore') || 0;
+        let lives = 3;
+        let soundEnabled = true;
+        let animFrameId;
+
+        // Player Basket / Plate
+        const basket = {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 30,
+            speed: 8,
+            dx: 0
+        };
+
+        // Falling Items
+        let fallingItems = [];
+        let spawnTimer = 0;
+        let spawnInterval = 60; // Frame interval
+        let speedMultiplier = 1;
+
+        /* Tone.js Audio Synth Setup */
+        let synth, polySynth;
+
+        function initAudio() {
+            try {
+                synth = new Tone.Synth().toDestination();
+                polySynth = new Tone.PolySynth().toDestination();
+            } catch(e) {
+                console.log("Audio Init Warning: ", e);
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                Tone.start();
+                if (type === 'good') {
+                    synth.triggerAttackRelease("C5", "8n");
+                } else if (type === 'bad') {
+                    synth.triggerAttackRelease("G2", "8n");
+                } else if (type === 'gameover') {
+                    polySynth.triggerAttackRelease(["C3", "E3", "G3"], "4n");
+                }
+            } catch(e) {
+                // Audio fallback silence
+            }
+        }
+
+        /* ================= INITIALIZATION ================= */
+        window.onload = function() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Update Highscore display
+            document.getElementById('highScoreDisplay').innerText = highScore;
+
+            // Setup Controls
+            setupControls();
+
+            // Populate Education Module
+            populateEdukasi();
+
+            // Init Plate default state
+            selectPlateSection('karbo');
+
+            // Draw initial static canvas
+            drawGameInitialState();
+
+            initAudio();
+        };
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = Math.min(window.innerHeight * 0.5, 480);
+            
+            basket.y = canvas.height - 45;
+            basket.width = Math.max(80, canvas.width * 0.18);
+            if (basket.x > canvas.width - basket.width) {
+                basket.x = canvas.width - basket.width;
+            }
+        }
+
+        /* ================= CONTROLS & EVENT LISTENERS ================= */
+        function setupControls() {
+            // Keyboard Listener
+            window.addEventListener('keydown', (e) => {
+                if (!gameRunning || isPaused) return;
+                if (e.key === 'ArrowLeft' || e.key === 'a') basket.dx = -basket.speed;
+                if (e.key === 'ArrowRight' || e.key === 'd') basket.dx = basket.speed;
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
+                    basket.dx = 0;
+                }
+            });
+
+            // Touch / On-screen Buttons
+            const btnLeft = document.getElementById('btnLeft');
+            const btnRight = document.getElementById('btnRight');
+
+            const startLeft = (e) => { e.preventDefault(); basket.dx = -basket.speed; };
+            const stopLeft = (e) => { e.preventDefault(); if (basket.dx < 0) basket.dx = 0; };
+            const startRight = (e) => { e.preventDefault(); basket.dx = basket.speed; };
+            const stopRight = (e) => { e.preventDefault(); if (basket.dx > 0) basket.dx = 0; };
+
+            btnLeft.addEventListener('mousedown', startLeft);
+            btnLeft.addEventListener('mouseup', stopLeft);
+            btnLeft.addEventListener('touchstart', startLeft);
+            btnLeft.addEventListener('touchend', stopLeft);
+
+            btnRight.addEventListener('mousedown', startRight);
+            btnRight.addEventListener('mouseup', stopRight);
+            btnRight.addEventListener('touchstart', startRight);
+            btnRight.addEventListener('touchend', stopRight);
+
+            // Canvas Direct Drag Control
+            let isDragging = false;
+            canvas.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                moveBasketToTouch(e);
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (isDragging) moveBasketToTouch(e);
+            });
+
+            canvas.addEventListener('touchend', () => { isDragging = false; });
+        }
+
+        function moveBasketToTouch(e) {
+            if (!gameRunning || isPaused) return;
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            basket.x = touchX - basket.width / 2;
+            
+            // Constrain inside boundaries
+            if (basket.x < 0) basket.x = 0;
+            if (basket.x + basket.width > canvas.width) basket.x = canvas.width - basket.width;
+        }
+
+        /* ================= GAME LOOP & ENGINE ================= */
+        function startGame() {
+            score = 0;
+            lives = 3;
+            fallingItems = [];
+            spawnTimer = 0;
+            speedMultiplier = 1;
+            gameRunning = true;
+            isPaused = false;
+
+            document.getElementById('scoreDisplay').innerText = score;
+            updateLivesDisplay();
+            document.getElementById('gameOverlay').classList.add('hidden');
+            document.getElementById('pauseBtn').disabled = false;
+
+            basket.x = canvas.width / 2 - basket.width / 2;
+
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            gameLoop();
+        }
+
+        function togglePause() {
+            if (!gameRunning) return;
+            isPaused = !isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (isPaused) {
+                pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                showToast("GAME DIPAUS", "bg-amber-500 text-white");
+            } else {
+                pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                gameLoop();
+            }
+        }
+
+        function gameLoop() {
+            if (!gameRunning || isPaused) return;
+
+            update();
+            render();
+
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            // Move Basket
+            basket.x += basket.dx;
+            if (basket.x < 0) basket.x = 0;
+            if (basket.x + basket.width > canvas.width) basket.x = canvas.width - basket.width;
+
+            // Spawn Food Items
+            spawnTimer++;
+            if (spawnTimer >= Math.max(25, spawnInterval - Math.floor(score / 50) * 3)) {
+                spawnTimer = 0;
+                spawnFood();
+            }
+
+            // Move & Check Collisions for Falling Items
+            for (let i = fallingItems.length - 1; i >= 0; i--) {
+                const item = fallingItems[i];
+                item.y += item.speed * speedMultiplier;
+
+                // Check Collision with Basket Plate
+                if (
+                    item.y + item.radius >= basket.y &&
+                    item.y - item.radius <= basket.y + basket.height &&
+                    item.x + item.radius >= basket.x &&
+                    item.x - item.radius <= basket.x + basket.width
+                ) {
+                    // Item Caught
+                    handleItemCaught(item);
+                    fallingItems.splice(i, 1);
+                    continue;
+                }
+
+                // Check Missed Item (Below Floor)
+                if (item.y - item.radius > canvas.height) {
+                    // Missed healthy food penalty optional (we keep it friendly, no penalty for miss)
+                    fallingItems.splice(i, 1);
+                }
+            }
+
+            // Gradually Increase Difficulty
+            speedMultiplier = 1 + Math.floor(score / 80) * 0.15;
+        }
+
+        function spawnFood() {
+            const randomTemplate = FOOD_ITEMS[Math.floor(Math.random() * FOOD_ITEMS.length)];
+            const radius = 22;
+            const x = Math.random() * (canvas.width - radius * 2) + radius;
+
+            fallingItems.push({
+                ...randomTemplate,
+                x: x,
+                y: -radius,
+                radius: radius,
+                speed: 2.5 + Math.random() * 2
+            });
+        }
+
+        function handleItemCaught(item) {
+            if (item.type === 'healthy') {
+                score += item.score;
+                playSound('good');
+                showToast(`+${item.score} ${item.name}: ${item.info}`, "bg-emerald-500 text-white");
+            } else {
+                lives--;
+                playSound('bad');
+                showToast(`Waspada! ${item.name}: ${item.info}`, "bg-rose-500 text-white");
+                updateLivesDisplay();
+
+                if (lives <= 0) {
+                    gameOver();
+                }
+            }
+
+            document.getElementById('scoreDisplay').innerText = score;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('nutri_highscore', highScore);
+                document.getElementById('highScoreDisplay').innerText = highScore;
+            }
+        }
+
+        function updateLivesDisplay() {
+            const livesContainer = document.getElementById('livesDisplay');
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                if (i < lives) {
+                    livesContainer.innerHTML += '<i class="fa-solid fa-heart"></i>';
+                } else {
+                    livesContainer.innerHTML += '<i class="fa-regular fa-heart opacity-40"></i>';
+                }
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            playSound('gameover');
+
+            const overlay = document.getElementById('gameOverlay');
+            const title = document.getElementById('overlayTitle');
+            const desc = document.getElementById('overlayDesc');
+            const btn = document.getElementById('startBtn');
+
+            title.innerText = "Permainan Selesai!";
+            desc.innerHTML = `Skor Akhir Kamu: <b class="text-emerald-600 text-lg">${score}</b><br>Selalu ingat memilih makanan bergizi seimbang untuk kesehatanmu!`;
+            btn.innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i>Coba Lagi';
+
+            overlay.classList.remove('hidden');
+            document.getElementById('pauseBtn').disabled = true;
+        }
+
+        /* ================= CANVAS RENDER ================= */
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Background elements (Awan & Rumput)
+            drawBackgroundDecoration();
+
+            // Draw Basket / Plate
+            drawBasket();
+
+            // Draw Falling Food Items
+            fallingItems.forEach(item => {
+                ctx.font = `${item.radius * 1.6}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item.emoji, item.x, item.y);
+            });
+        }
+
+        function drawBackgroundDecoration() {
+            // Soft clouds
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.beginPath();
+            ctx.arc(60, 50, 20, 0, Math.PI * 2);
+            ctx.arc(85, 40, 28, 0, Math.PI * 2);
+            ctx.arc(110, 50, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(canvas.width - 80, 70, 22, 0, Math.PI * 2);
+            ctx.arc(canvas.width - 55, 60, 30, 0, Math.PI * 2);
+            ctx.arc(canvas.width - 30, 70, 22, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawBasket() {
+            // Plate Plate Visual
+            ctx.save();
+            
+            // Plate Shadow
+            ctx.fillStyle = "rgba(0,0,0,0.15)";
+            ctx.beginPath();
+            ctx.ellipse(basket.x + basket.width / 2, basket.y + basket.height + 5, basket.width / 2, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Outer Plate Body
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 16);
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#10B981";
+            ctx.stroke();
+
+            // Inner Plate Rim
+            ctx.fillStyle = "#ECFDF5";
+            ctx.beginPath();
+            ctx.roundRect(basket.x + 6, basket.y + 4, basket.width - 12, basket.height - 12, 10);
+            ctx.fill();
+
+            // Plate Label Icon
+            ctx.font = "14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("🍽️", basket.x + basket.width / 2, basket.y + basket.height / 2 + 2);
+
+            ctx.restore();
+        }
+
+        function drawGameInitialState() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackgroundDecoration();
+            basket.x = canvas.width / 2 - basket.width / 2;
+            drawBasket();
+        }
+
+        /* ================= TOAST NOTIFICATION SYSTEM ================= */
+        let toastTimeout;
+        function showToast(message, colorClass) {
+            const toast = document.getElementById('gameToast');
+            toast.className = `absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2.5 rounded-2xl shadow-xl font-semibold text-xs md:text-sm text-center max-w-[90%] toast-enter ${colorClass}`;
+            toast.innerText = message;
+            toast.classList.remove('hidden');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 2200);
+        }
+
+        /* ================= TAB SWITCHER ================= */
+        function switchTab(tabName) {
+            document.getElementById('section-game').classList.add('hidden');
+            document.getElementById('section-piring').classList.add('hidden');
+            document.getElementById('section-edukasi').classList.add('hidden');
+
+            document.getElementById('nav-game').className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-100/50";
+            document.getElementById('nav-piring').className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-100/50";
+            document.getElementById('nav-edukasi').className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-100/50";
+
+            if (tabName === 'game') {
+                document.getElementById('section-game').classList.remove('hidden');
+                document.getElementById('nav-game').className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-emerald-500 text-white shadow-sm";
+            } else if (tabName === 'piring') {
+                document.getElementById('section-piring').classList.remove('hidden');
+                document.getElementById('nav-piring').className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-emerald-500 text-white shadow-sm";
+                if (gameRunning && !isPaused) togglePause();
+            } else if (tabName === 'edukasi') {
+                document.getElementById('section-edukasi').classList.remove('hidden');
+                document.getElementById('nav-edukasi').className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-emerald-500 text-white shadow-sm";
+                if (gameRunning && !isPaused) togglePause();
+            }
+        }
+
+        /* ================= ISI PIRINGKU INTERACTION ================= */
+        function selectPlateSection(key) {
+            const data = PLATE_DATA[key];
+            if (!data) return;
+
+            document.getElementById('plateInfoIcon').innerText = data.icon;
+            document.getElementById('plateInfoTitle').innerText = data.title;
+            document.getElementById('plateInfoSubtitle').innerText = data.subtitle;
+            document.getElementById('plateInfoDesc').innerText = data.desc;
+
+            const listContainer = document.getElementById('plateInfoList');
+            listContainer.innerHTML = data.list.map(item => `<div class="p-1.5 bg-white rounded-lg border border-slate-100 font-medium">${item}</div>`).join('');
+        }
+
+        /* ================= ENSIKLOPEDIA MODULE POPULATION ================= */
+        function populateEdukasi() {
+            const healthyContainer = document.getElementById('healthyList');
+            const unhealthyContainer = document.getElementById('unhealthyList');
+
+            const healthyFoods = FOOD_ITEMS.filter(f => f.type === 'healthy');
+            const unhealthyFoods = FOOD_ITEMS.filter(f => f.type === 'unhealthy');
+
+            healthyContainer.innerHTML = healthyFoods.map(item => `
+                <div class="p-3 bg-emerald-50/60 rounded-2xl border border-emerald-100 flex items-center space-x-3 hover:bg-emerald-100/50 transition">
+                    <span class="text-3xl">${item.emoji}</span>
+                    <div>
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-800">${item.name}</h4>
+                        <p class="text-[11px] sm:text-xs text-slate-600">${item.info}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            unhealthyContainer.innerHTML = unhealthyFoods.map(item => `
+                <div class="p-3 bg-rose-50/60 rounded-2xl border border-rose-100 flex items-center space-x-3 hover:bg-rose-100/50 transition">
+                    <span class="text-3xl">${item.emoji}</span>
+                    <div>
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-800">${item.name}</h4>
+                        <p class="text-[11px] sm:text-xs text-slate-600">${item.info}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* Sound Toggle Switch */
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundBtn');
+            if (soundEnabled) {
+                btn.className = "text-xs font-semibold px-2.5 py-1 mt-1 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition";
+                btn.innerHTML = '<i class="fa-solid fa-volume-high mr-1"></i>ON';
+            } else {
+                btn.className = "text-xs font-semibold px-2.5 py-1 mt-1 rounded-lg bg-slate-200 text-slate-600 hover:bg-slate-300 transition";
+                btn.innerHTML = '<i class="fa-solid fa-volume-xmark mr-1"></i>OFF';
+            }
+        }
+    </script>
+</body>
+</html>
